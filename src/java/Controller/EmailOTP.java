@@ -45,7 +45,7 @@ public class EmailOTP {
             message.setSubject("Mã Xác Thực OTP - FastFood", "UTF-8");
             String emailContent = "<p>Chào bạn,</p>"
                     + "<p>Mã xác thực (OTP) của bạn là: <b style='font-size: 18px; color: #ea6a47;'>" + otpCode + "</b></p>"
-                    + "<p>Mã này có hiệu lực trong vòng 15 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>";
+                    + "<p>Mã này có hiệu lực trong vòng 10 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>";
 
             message.setContent(emailContent, "text/html; charset=UTF-8");
 

@@ -116,6 +116,7 @@ public class CartDAO {
         }
         return list;
     }
+    // 1. Hàm Xóa món ăn khỏi giỏ
 
     public void removeFromCart(int userId, int productId) {
         String sql = "DELETE FROM cart_items WHERE cart_id = (SELECT cart_id FROM carts WHERE user_id = ? AND status = 'active') AND product_id = ?";
@@ -123,6 +124,24 @@ public class CartDAO {
             ps.setInt(1, userId);
             ps.setInt(2, productId);
             ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+// 2. Hàm Tăng/Giảm số lượng món ăn
+    public void updateCartItemQuantity(int userId, int productId, int changeAmount) {
+        String sql = "UPDATE cart_items SET quantity = quantity + (?) WHERE cart_id = (SELECT cart_id FROM carts WHERE user_id = ? AND status = 'active') AND product_id = ?";
+        try ( Connection con = Connect.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, changeAmount); // Truyền +1 (tăng) hoặc -1 (giảm)
+            ps.setInt(2, userId);
+            ps.setInt(3, productId);
+            ps.executeUpdate();
+
+            // Tự động xóa nếu số lượng tụt xuống <= 0
+            String deleteSql = "DELETE FROM cart_items WHERE quantity <= 0";
+            PreparedStatement psDelete = con.prepareStatement(deleteSql);
+            psDelete.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }

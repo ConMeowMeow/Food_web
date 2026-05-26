@@ -12,6 +12,7 @@
     List<Product> wishlist = new ArrayList<>();
     List<Integer> favIds = new ArrayList<>();
     double totalCartPrice = 0;
+    int cartSize = 0;
 
     // Xử lý User Session
     User user = (User) session.getAttribute("userAccount");
@@ -34,6 +35,7 @@
             // 2. Dữ liệu Giỏ Hàng
             CartDAO cdao = new CartDAO();
             cartList = cdao.getCartItems(user.getId());
+            cartSize = cartList.size();
             for (CartItem item : cartList) {
                 totalCartPrice += item.getPrice() * item.getQuantity();
             }
@@ -154,7 +156,7 @@
                             <a href="AddToCart" class="text-dark fs-4 text-decoration-none icon-action d-flex align-items-center justify-content-center icon-wrap-circle" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                                 <i class="fas fa-shopping-cart"></i>
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge custom-badge-pos">
-                                    ${isLogged and not empty cartList ? fn:length(cartList) : 0}
+                                    ${isLogged ? fn:length(cartList) : 0}
                                 </span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end border-0 cart-dropdown-menu p-3 shadow" aria-labelledby="cartDropdown" style="min-width: 320px;">
@@ -183,11 +185,21 @@
                                                 <div class="cart-items-list mb-3 scrollable-list" style="max-height: 250px; overflow-y: auto;">
                                                     <c:forEach var="item" items="${cartList}">
                                                         <div class="d-flex align-items-center mb-3">
-                                                            <h6 class="mb-1 text-truncate">${item.productName}</h6>
 
-                                                            <a href="RemoveFromCart?productId=${item.productId}" class="text-danger ms-2">
-                                                                <i class="fas fa-trash"></i>
+                                                            <img src="${not empty item.imageUrl ? pageContext.request.contextPath.concat('/').concat(item.imageUrl) : 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd'}" 
+                                                                 class="rounded" style="width: 50px; height: 50px; object-fit: cover;" alt="Food">
+
+                                                            <div class="ms-3 flex-grow-1">
+                                                                <h6 class="mb-1 text-truncate" style="max-width: 170px;">${item.productName}</h6>
+                                                                <span class="text-muted small">
+                                                                    ${item.quantity} x <fmt:formatNumber value="${item.price}" pattern="#,###"/>đ
+                                                                </span>
+                                                            </div>
+
+                                                            <a href="RemoveFromCart?productId=${item.productId}" class="text-danger ms-2" title="Xóa món này">
+                                                                <i class="fas fa-trash fs-5"></i>
                                                             </a>
+
                                                         </div>
                                                     </c:forEach>
                                                 </div>
@@ -217,12 +229,12 @@
 
                                 <c:otherwise>
                                     <a href="#" class="text-dark text-decoration-none d-flex align-items-center justify-content-center border border-2 border-primary rounded-circle icon-wrap-profile" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <img src="${not empty avatar ? avatar : 'https://ui-avatars.com/api/?name='.concat(displayName).concat('&background=ea6a47&color=fff')}" 
+                                        <img src="${not empty avatar ? avatar : './img/default.png'}" 
                                              alt="Avatar" class="rounded-circle w-100 h-100" style="object-fit: cover;">
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-center border-0 shadow-lg profile-dropdown" aria-labelledby="accountDropdown">
                                         <div class="profile-header mx-2 my-1 p-2 rounded d-flex align-items-center">
-                                            <img src="${not empty avatar ? avatar : 'https://ui-avatars.com/api/?name='.concat(displayName).concat('&background=ea6a47&color=fff')}" 
+                                            <img src="${not empty avatar ? avatar : './img/default.png'}" 
                                                  alt="Avatar" class="rounded-circle icon-wrap-circle" style="object-fit: cover;">
                                             <div class="ms-3">
                                                 <h6 class="mb-0 fw-bold fs-6">${displayName}</h6>
@@ -398,7 +410,7 @@
 
                                             <form action="AddToCart" method="POST" style="display:inline;">
                                                 <input type="hidden" name="productId" value="${p.productId}">
-                                                <button type="submit" class="btn btn-mua-ngay action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2">
+                                                <button type="submit" class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2">
                                                     Thêm <i class="fas fa-cart-plus"></i>
                                                 </button>
                                             </form>

@@ -67,7 +67,6 @@ public class TrangChu extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("userAccount");
-        System.out.println("DEBUG: TrangChu nhận thấy User: " + user.getEmail() + " - Role: " + user.getRole());
 
         String role = user.getRole();
         // Kiểm tra kỹ điều kiện Role (Tránh lỗi null nếu Role chưa được set)

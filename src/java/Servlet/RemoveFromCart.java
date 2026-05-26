@@ -58,17 +58,22 @@ public class RemoveFromCart extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("userAccount");
-        String productIdStr = request.getParameter("productId");
+        User user = (User) request.getSession().getAttribute("userAccount");
+        if (user == null) {
+            response.sendRedirect("DangNhap.jsp");
+            return;
+        }
 
-        if (user != null && productIdStr != null) {
+        String productIdStr = request.getParameter("productId");
+        if (productIdStr != null) {
             int productId = Integer.parseInt(productIdStr);
             CartDAO cDao = new CartDAO();
             cDao.removeFromCart(user.getId(), productId);
         }
-        // Redirect về trang trước đó
+
+        // Tự động quay lại trang vừa đứng (Trang Giỏ Hàng hoặc Trang Chủ)
         String referer = request.getHeader("Referer");
+        response.sendRedirect(referer != null ? referer : "Cart.jsp");
     }
 
     /**

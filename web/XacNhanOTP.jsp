@@ -75,7 +75,7 @@
 
                     <div class="text-center mb-4">
                         <p class="mb-1 text-muted small">Mã OTP sẽ hết hạn sau:</p>
-                        <div class="timer" id="countdown">15:00</div>
+                        <div class="timer" id="countdown">10:00</div>
                     </div>
 
                     <button type="submit" class="btn btn-custom w-100 py-2 fw-bold" style="border-radius: 8px;">Xác Nhận</button>
@@ -121,8 +121,8 @@
                     });
                 }
 
-                // 3. Logic đếm ngược 15 phút (900 giây) bảo vệ nghiêm ngặt
-                let timeLeft = 15 * 60;
+                // 3. Logic đếm ngược 10 phút (900 giây) bảo vệ nghiêm ngặt
+                let timeLeft = 10 * 60;
 
                 const countdownTimer = setInterval(() => {
                     let minutes = Math.floor(timeLeft / 60);

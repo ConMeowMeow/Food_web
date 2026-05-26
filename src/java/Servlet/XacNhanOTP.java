@@ -80,8 +80,8 @@ public class XacNhanOTP extends HttpServlet {
             EmailOTP emailHelper = new EmailOTP();
             emailHelper.sendOTP(email, newOtpCode);
 
-            // 3. Gia hạn lại thời gian hết hạn mới (+15 phút)
-            long newExpiryTime = System.currentTimeMillis() + (15 * 60 * 1000);
+            // 3. Gia hạn lại thời gian hết hạn mới (+10 phút)
+            long newExpiryTime = System.currentTimeMillis() + (10 * 60 * 1000);
 
             // 4. Cập nhật lại Session
             session.setAttribute("savedOTP", newOtpCode);

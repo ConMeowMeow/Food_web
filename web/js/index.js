@@ -727,7 +727,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    let cartItems = [];
+    //let cartItems = [];
 
     function formatCurrency(value) {
         return new Intl.NumberFormat('vi-VN').format(value) + 'đ';
