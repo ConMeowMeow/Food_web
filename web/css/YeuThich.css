@@ -1,0 +1,28 @@
+.bg-theme-color {
+    background-color: var(--bg-color);
+}
+
+.wishlist-page-section {
+    margin-top: 110px;
+    min-height: 60vh;
+}
+
+.empty-state-card {
+    min-height: 400px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.empty-state-icon {
+    font-size: 5rem;
+    color: #dee2e6;
+}
+
+.empty-state-text {
+    max-width: 400px;
+}
+
+.btn-wishlist {
+    z-index: 5;
+}

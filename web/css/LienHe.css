@@ -1,0 +1,105 @@
+.contact-body {
+    background-color: #f5f5f5;
+}
+
+.contact-section {
+    padding: 40px 0 60px 0;
+}
+
+.form-control.is-invalid, .form-select.is-invalid {
+    transition: none !important;
+}
+
+.invalid-feedback {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Shopee-style Form Containers */
+.shopee-form-container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.shopee-label {
+    font-weight: 500;
+    color: #222;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.shopee-input {
+    border-radius: 4px;
+    border: 1px solid #e5e5e5;
+    padding: 7px 14px;
+    font-size: 0.95rem;
+    box-shadow: none !important;
+}
+
+.shopee-input:focus {
+    border-color: var(--primary-color);
+}
+
+.shopee-upload-btn {
+    border: 1px solid #e5e5e5;
+    background: #fff;
+    color: #555;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.shopee-upload-btn:hover {
+    background: #f8f9fa;
+    border-color: #ccc;
+}
+
+.contact-title {
+    color: #333;
+}
+
+.form-hint {
+    font-size: 0.85rem;
+}
+
+.form-upload-label,
+.agreement-label {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.agreement-label {
+    line-height: 1.5;
+}
+
+.upload-title {
+    color: #333;
+    font-size: 1rem;
+}
+
+.required-asterisk {
+    margin-top: 2px;
+}
+
+.btn-submit-contact {
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+.btn-submit-contact:hover {
+    background-color: var(--primary-hover);
+    color: white;
+}
+
+.profile-view-btn {
+    background-color: var(--bg-color);
+    font-size: 0.9rem;
+}
+
+.profile-avatar-sm {
+    width: 40px;
+    height: 40px;
+}

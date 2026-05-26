@@ -1,0 +1,204 @@
+/* ==========================================================================
+   ORIGINAL STYLES
+   ========================================================================== */
+body {
+    background-color: #f5f5f5;
+}
+
+.profile-section {
+    padding-bottom: 80px;
+}
+
+.shopee-form-container {
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.shopee-input {
+    border-radius: 2px;
+    border: 1px solid #e5e5e5;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    box-shadow: none !important;
+}
+
+.shopee-input:focus {
+    border-color: var(--primary-color);
+}
+
+.shopee-upload-btn {
+    border: 1px solid #e5e5e5;
+    background: #fff;
+    color: #555;
+    border-radius: 2px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.shopee-upload-btn:hover {
+    background: #f8f9fa;
+    border-color: #ccc;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.profile-sidebar .list-group-item {
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.profile-sidebar .list-group-item:hover {
+    color: var(--primary-color) !important;
+}
+
+.profile-sidebar .active-custom.text-white {
+    color: var(--primary-color) !important;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   EXTRACTED INLINE STYLES (Clean Code)
+   ========================================================================== */
+
+/* Avatars & Images */
+.avatar-sm {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+.avatar-md {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+}
+.avatar-lg {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+.avatar-80 {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+.sidebar-icon {
+    width: 24px;
+    text-align: center;
+}
+
+/* Buttons & Elements */
+.btn-primary-custom {
+    background-color: var(--primary-color) !important;
+    border-radius: 2px;
+    color: white !important;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-primary-custom:hover {
+    background-color: var(--primary-hover) !important;
+    transform: translateY(-2px);
+}
+
+.btn-profile-view {
+    background-color: var(--bg-color);
+    font-size: 0.9rem;
+}
+
+.btn-outline-custom-gray {
+    border-color: #d9d9d9;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+.btn-outline-custom-gray:hover {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+}
+
+/* Typography Utilities */
+.text-sm-custom {
+    font-size: 0.95rem;
+}
+.text-xs-custom {
+    font-size: 0.85rem;
+}
+
+/* Components */
+.address-actions {
+    height: 100%;
+    min-width: 150px;
+}
+.badge-default {
+    padding: 4px 8px;
+}
+.pass-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Empty States */
+.empty-state {
+    min-height: 200px;
+}
+.empty-icon {
+    font-size: 3rem;
+    color: #ccc;
+}
+
+/* Interactive Cards */
+.order-card-link {
+    cursor: pointer;
+}
+.order-card-link .card-body {
+    transition: background-color 0.2s ease;
+}
+.order-card-link:hover .card-body {
+    background-color: #f8f9fa;
+}
+
+.wishlist-card {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+.wishlist-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px);
+}
+.wishlist-title {
+    color: #212529;
+    transition: color 0.2s ease;
+}
+.wishlist-card:hover .wishlist-title {
+    color: var(--primary-color);
+}
+.wishlist-btn-remove {
+    width: 40px;
+    height: 40px;
+    z-index: 2;
+    transition: all 0.2s ease;
+}
+.wishlist-btn-remove:hover {
+    transform: scale(1.1);
+    background-color: #ffeaea !important;
+}
+
+/* Voucher Layout */
+.voucher-card {
+    height: 110px;
+    border-radius: 4px;
+    border: 1px solid #e5e5e5 !important;
+}
+.voucher-left {
+    width: 105px;
+    background-color: var(--primary-color);
+    border-right: 2px dashed #fff;
+}
