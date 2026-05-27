@@ -18,10 +18,9 @@ public class UserDAO {
 
     public boolean checkEmailExists(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
-        try (Connection conn = Connect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( Connection conn = Connect.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
         } catch (Exception e) {
@@ -33,9 +32,9 @@ public class UserDAO {
     public User login(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ?";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String dbPassword = rs.getString("password");
                     String hashedInputPassword = EncryptPass.convertToSHA256(password);
@@ -64,7 +63,7 @@ public class UserDAO {
     public boolean updateUser(int id, String name, String email, String phone, int addressId) {
         String sql = "UPDATE users SET fullname=?, email=?, phone=?, address_id=? WHERE id=?";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, name);
             ps.setString(2, email);
             ps.setString(3, phone);
@@ -79,7 +78,7 @@ public class UserDAO {
 
     public boolean updateAvatar(int userId, String avatarUrl) {
         String sql = "UPDATE users SET avatar_url = ? WHERE id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, avatarUrl);
             ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
@@ -90,7 +89,7 @@ public class UserDAO {
     }
 
     public User signup(String email, String password, String fullname, String phone, String addressDetail) {
-        String sqlUser = "INSERT INTO users (email, password, fullname, phone, role, status) VALUES (?, ?, ?, ?, 'user', 1)";
+        String sqlUser = "INSERT INTO users (email, password, fullname, phone, role, status, avatar_url) VALUES (?, ?, ?, ?, 'user', 1, './img/avt/default.png')";
         String sqlCart = "INSERT INTO carts (user_id, status) VALUES (?, 'active')";
         String sqlAddress = "INSERT INTO addresses (user_id, recipient_name, phone, province, district, ward, address_detail, is_default) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, 1)";
@@ -99,23 +98,23 @@ public class UserDAO {
             conn.setAutoCommit(false);
             String hashedPassword = EncryptPass.convertToSHA256(password);
 
-            try (PreparedStatement psUser = conn.prepareStatement(sqlUser, Statement.RETURN_GENERATED_KEYS)) {
+            try ( PreparedStatement psUser = conn.prepareStatement(sqlUser, Statement.RETURN_GENERATED_KEYS)) {
                 psUser.setString(1, email);
                 psUser.setString(2, hashedPassword);
                 psUser.setString(3, fullname);
                 psUser.setString(4, phone);
                 psUser.executeUpdate();
 
-                try (ResultSet rs = psUser.getGeneratedKeys()) {
+                try ( ResultSet rs = psUser.getGeneratedKeys()) {
                     if (rs.next()) {
                         int newUserId = rs.getInt(1);
 
-                        try (PreparedStatement psCart = conn.prepareStatement(sqlCart)) {
+                        try ( PreparedStatement psCart = conn.prepareStatement(sqlCart)) {
                             psCart.setInt(1, newUserId);
                             psCart.executeUpdate();
                         }
 
-                        try (PreparedStatement psAddress = conn.prepareStatement(sqlAddress)) {
+                        try ( PreparedStatement psAddress = conn.prepareStatement(sqlAddress)) {
                             psAddress.setInt(1, newUserId);
                             psAddress.setString(2, fullname);
                             psAddress.setString(3, phone);
@@ -139,17 +138,25 @@ public class UserDAO {
                 }
             }
         } catch (Exception e) {
-            try { conn.rollback(); } catch (Exception ex) { ex.printStackTrace(); }
+            try {
+                conn.rollback();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         } finally {
-            try { conn.setAutoCommit(true); } catch (Exception ex) { ex.printStackTrace(); }
+            try {
+                conn.setAutoCommit(true);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
         return null;
     }
 
     public boolean updateProfile(User user) {
         String sql = "UPDATE users SET username=?, fullname=?, email=?, phone=?, gender=?, birthday=?, avatar_url=? WHERE id=?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getFullName());
             ps.setString(3, user.getEmail());
@@ -167,9 +174,9 @@ public class UserDAO {
 
     public boolean checkOldPassword(int userId, String oldPassword) {
         String sql = "SELECT password FROM users WHERE id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String dbPassword = rs.getString("password");
                     String hashedOld = EncryptPass.convertToSHA256(oldPassword);
@@ -184,7 +191,7 @@ public class UserDAO {
 
     public boolean updatePassword(int userId, String newPassword) {
         String sql = "UPDATE users SET password = ? WHERE id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, EncryptPass.convertToSHA256(newPassword));
             ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
@@ -203,9 +210,7 @@ public class UserDAO {
                 + "WHERE u.role = 'user' "
                 + "ORDER BY u.id DESC";
 
-        try (Connection conn = Connect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = Connect.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 User u = new User();
@@ -227,8 +232,7 @@ public class UserDAO {
 
     public void updateUserStatus(int userId, byte newStatus) {
         String query = "UPDATE users SET status = ? WHERE id = ?";
-        try (Connection conn = Connect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
+        try ( Connection conn = Connect.getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setByte(1, newStatus);
             ps.setInt(2, userId);
             ps.executeUpdate();
@@ -245,9 +249,7 @@ public class UserDAO {
                 + "WHERE u.role != 'user' "
                 + "ORDER BY u.id DESC";
 
-        try (Connection conn = Connect.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = Connect.getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 User u = new User();
@@ -267,4 +269,3 @@ public class UserDAO {
         return list;
     }
 }
-

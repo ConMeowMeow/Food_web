@@ -5,7 +5,10 @@
 package Servlet;
 
 import Controller.CartDAO;
+import Controller.Connect;
 import Controller.OrderDAO;
+import Controller.ProductDAO;
+import Controller.SendMail;
 import Model.CartItem;
 import Model.Order;
 import Model.OrderItem;
@@ -146,7 +149,40 @@ public class ThanhToan extends HttpServlet {
             boolean isSuccess = orderDAO.createOrder(order, orderItemsList);
 
             if (isSuccess) {
-                cartDAO.clearCart(user.getId());
+                // SỬA: Dùng đúng tên biến là cartDAO
+                CartDAO cartDAO_clear = new CartDAO(); 
+                cartDAO_clear.clearCart(user.getId());
+
+                // ===== THÊM ĐOẠN GỬI MAIL NÀY =====
+                String subject = "Xác nhận đơn hàng #" + order.getOrderId() + " từ FastFood";
+
+                StringBuilder body = new StringBuilder();
+                body.append("<h2>Cảm ơn ").append(order.getRecipientName()).append(" đã đặt hàng!</h2>");
+                body.append("<p>Mã đơn hàng: <b>#").append(order.getOrderId()).append("</b></p>");
+                body.append("<p>Địa chỉ nhận: ").append(order.getAddressDetail()).append("</p>");
+                body.append("<hr>");
+                body.append("<table border='1' style='border-collapse: collapse; width: 100%;'>");
+                body.append("<tr style='background-color: #f2f2f2;'><th>Món ăn</th><th>Số lượng</th><th>Đơn giá</th></tr>");
+
+                // SỬA: Dùng orderItemsList thay vì items
+                for (OrderItem item : orderItemsList) { 
+                    String productName = new ProductDAO(Connect.getConnection()).getProductById(item.getProductId()).getName();
+                    
+                    body.append("<tr>");
+                    body.append("<td style='padding: 8px;'>").append(productName).append("</td>");
+                    body.append("<td style='padding: 8px; text-align: center;'>").append(item.getQuantity()).append("</td>");
+                    body.append("<td style='padding: 8px; text-align: right;'>").append(String.format("%,.0f", item.getPrice())).append(" đ</td>");
+                    body.append("</tr>");
+                }
+                body.append("</table>");
+                body.append("<p style='font-size: 16px;'>Tổng thanh toán: <b style='color: red;'>")
+                    .append(String.format("%,.0f", order.getFinalAmount())).append(" VNĐ</b></p>");
+                body.append("<p>Đơn hàng sẽ được giao trong 30-45 phút. Chúc bạn ngon miệng!</p>");
+
+                // 3. Gửi mail
+                SendMail.sendEmail(user.getEmail(), subject, body.toString());
+                // ==================================
+
                 response.sendRedirect("OrderSuccess.jsp");
             } else {
                 response.getWriter().println("<h1>Đã xảy ra lỗi khi tạo đơn hàng!</h1>");

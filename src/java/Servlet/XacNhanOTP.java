@@ -76,7 +76,7 @@ public class XacNhanOTP extends HttpServlet {
             Random rnd = new Random();
             String newOtpCode = String.format("%06d", rnd.nextInt(999999));
 
-            // 2. Gửi lại Email 
+            // 2. Gửi lại EmailOTP 
             EmailOTP emailHelper = new EmailOTP();
             emailHelper.sendOTP(email, newOtpCode);
 
