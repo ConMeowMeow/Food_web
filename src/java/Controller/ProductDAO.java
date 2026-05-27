@@ -5,6 +5,7 @@
 package Controller;
 
 import Model.Product;
+import Model.Topping;
 import java.sql.*;
 import java.util.*;
 
@@ -27,7 +28,7 @@ public class ProductDAO {
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT * FROM products ORDER BY product_id DESC";
-        try ( Connection conn = Connect.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try ( Connection conn = Connect.getConnection();  PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Product p = new Product();
@@ -159,5 +160,31 @@ public class ProductDAO {
             e.printStackTrace();
         }
         return 1;
+    }
+
+    public List<Topping> getToppingsByProductId(int productId) {
+        List<Topping> list = new ArrayList<>();
+        // Lưu ý: Thay "toppings" bằng tên bảng thực tế của bạn trong DB
+        String sql = "SELECT * FROM toppings WHERE product_id = ?";
+
+        try ( Connection conn = Connect.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, productId); // Gán product_id bạn muốn tìm vào dấu ?
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Topping t = new Topping();
+                    t.setToppingId(rs.getInt("topping_id"));
+                    t.setProductId(rs.getInt("product_id"));
+                    t.setName(rs.getString("name"));
+                    t.setPrice(rs.getDouble("price"));
+                    t.setImageUrl(rs.getString("image_url"));
+                    list.add(t);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

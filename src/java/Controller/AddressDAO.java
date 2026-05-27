@@ -157,4 +157,28 @@ public class AddressDAO {
         return false;
     }
 
+    public String getDefaultAddressByUserId(int userId) {
+        String addressDetail = "";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        // Lấy địa chỉ mới nhất hoặc có trạng thái mặc định của user đó
+        String query = "SELECT address_detail FROM address WHERE user_id = ? ORDER BY id DESC LIMIT 1";
+
+        try {
+            conn = Connect.getConnection();
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, userId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                addressDetail = rs.getString("address_detail");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Đóng kết nối tại đây...
+        }
+        return addressDetail;
+    }
 }

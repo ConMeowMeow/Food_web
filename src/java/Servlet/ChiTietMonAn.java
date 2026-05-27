@@ -4,21 +4,23 @@
  */
 package Servlet;
 
-import Controller.CartDAO;
-import Model.User;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import Model.Topping;
+import Model.Product;
+import Controller.ProductDAO;
+import Controller.Connect;
 
 /**
  *
  * @author ConMeowMeow
  */
-public class AddToCart extends HttpServlet {
+public class ChiTietMonAn extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -37,10 +39,10 @@ public class AddToCart extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet AddToCard</title>");
+            out.println("<title>Servlet ChiTietMonAn</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet AddToCard at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ChiTietMonAn at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -58,7 +60,19 @@ public class AddToCart extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        int productId = Integer.parseInt(request.getParameter("id"));
+        // 1. Khởi tạo đối tượng ProductDAO (truyền connection vào nếu DAO của bạn yêu cầu)
+        ProductDAO pDao = new ProductDAO(Connect.getConnection());
+
+        // 2. Lấy thông tin Món ăn từ đối tượng pDao
+        Product product = pDao.getProductById(productId);
+        request.setAttribute("product", product);
+
+        // 3. Lấy danh sách Topping liên kết với Món ăn đó
+        List<Topping> toppingList = pDao.getToppingsByProductId(productId);
+        request.setAttribute("toppingList", toppingList);
+
+        request.getRequestDispatcher("ChiTietMonAn.jsp").forward(request, response);
     }
 
     /**
@@ -72,30 +86,7 @@ public class AddToCart extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("userAccount");
-
-        // Kiểm tra đăng nhập
-        if (user == null) {
-            response.sendRedirect("DangNhap");
-            return;
-        }
-
-        String productIdStr = request.getParameter("productId");
-        String quantityStr = request.getParameter("quantity"); // Lấy số lượng từ Form
-
-        if (productIdStr != null) {
-            int productId = Integer.parseInt(productIdStr);
-            // Nếu trang nào không gửi quantity lên (như Trang Chủ) thì mặc định là 1
-            int quantity = (quantityStr != null) ? Integer.parseInt(quantityStr) : 1;
-
-            CartDAO cDao = new CartDAO();
-            cDao.addToCart(user.getId(), productId, quantity); // Truyền quantity động vào
-        }
-
-        // Quay về trang cũ (giữ nguyên vị trí người dùng)
-        String referer = request.getHeader("Referer");
-        response.sendRedirect(referer != null ? referer : "TrangChu");
+        processRequest(request, response);
     }
 
     /**

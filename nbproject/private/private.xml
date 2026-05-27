@@ -12,6 +12,8 @@
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/YeuThich.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/TrangChu.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/Admin/DeleteProduct.java</file>
+            <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/ChiTietMonAn.java</file>
+            <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/ThanhToan.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/web/LienHe.jsp</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Model/Order.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/AddToFavourite.java</file>
@@ -31,6 +33,7 @@
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/SetDefaultAddress.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/web/admin/AdminList.jsp</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Controller/EmailOTP.java</file>
+            <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/web/ThanhToan.jsp</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Model/Cart.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Controller/FavouriteDAO.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/DangKy.java</file>
@@ -52,8 +55,10 @@
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/web/TrangChu.jsp</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/Admin/UpdateUserStatus.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Model/OrderItem.java</file>
+            <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/web/ChiTietMonAn.jsp</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/web/admin/AddCategory.jsp</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Controller/Connect.java</file>
+            <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Model/Topping.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/Admin/DeleteCategory.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Servlet/XacNhanOTP.java</file>
             <file>file:/C:/Users/ConMeowMeow/Documents/NetBeansProjects/Food_Web/src/java/Controller/ProductDAO.java</file>

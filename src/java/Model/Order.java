@@ -25,11 +25,12 @@ public class Order {
     private String recipientName;
     private String phone;
     private String addressDetail;
+    private String note;
 
     public Order() {
     }
 
-    public Order(int orderId, int userId, Timestamp createdAt, double totalAmount, double discountAmount, double finalAmount, String status, String paymentStatus, String paymentMethod, int promotionId, int addressId, String recipientName, String phone, String addressDetail) {
+    public Order(int orderId, int userId, Timestamp createdAt, double totalAmount, double discountAmount, double finalAmount, String status, String paymentStatus, String paymentMethod, int promotionId, int addressId, String recipientName, String phone, String addressDetail, String note) {
         this.orderId = orderId;
         this.userId = userId;
         this.createdAt = createdAt;
@@ -44,6 +45,7 @@ public class Order {
         this.recipientName = recipientName;
         this.phone = phone;
         this.addressDetail = addressDetail;
+        this.note = note;
     }
 
     public int getOrderId() {
@@ -156,6 +158,14 @@ public class Order {
 
     public void setAddressDetail(String addressDetail) {
         this.addressDetail = addressDetail;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
     
 }

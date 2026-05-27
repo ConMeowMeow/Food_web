@@ -159,6 +159,18 @@
         <servlet-name>Cart</servlet-name>
         <servlet-class>Servlet.Cart</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ChiTietMonAn</servlet-name>
+        <servlet-class>Servlet.ChiTietMonAn</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ThanhToan</servlet-name>
+        <servlet-class>Servlet.ThanhToan</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Order</servlet-name>
+        <servlet-class>Servlet.Order</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>TrangChu</servlet-name>
         <url-pattern>/TrangChu</url-pattern>
@@ -314,6 +326,18 @@
     <servlet-mapping>
         <servlet-name>Cart</servlet-name>
         <url-pattern>/Cart</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ChiTietMonAn</servlet-name>
+        <url-pattern>/ChiTietMonAn</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ThanhToan</servlet-name>
+        <url-pattern>/ThanhToan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Order</servlet-name>
+        <url-pattern>/Order</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -122,75 +122,62 @@
                         <div class="card-body p-4">
                             <form id="addProductForm" action="AddProduct" method="POST" enctype="multipart/form-data" novalidate>
                                 <div class="mb-3">
-                                    <label for="productTitle" class="form-label text-dark fw-medium" style="font-size: 0.95rem;">Tên Món</label>
-                                    <input type="text" class="form-control form-control-custom" id="productTitle" name="productTitle" required>
+                                    <label for="productTitle" class="form-label text-dark fw-bold">Tên Món</label>
+                                    <input type="text" class="form-control form-control-custom" id="productTitle" name="productTitle" placeholder="Nhập tên món ăn..." required>
                                     <div class="invalid-feedback">Vui lòng nhập tên sản phẩm.</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="productDesc" class="form-label text-dark fw-medium" style="font-size: 0.95rem;">Mô Tả</label>
-                                    <textarea class="form-control form-control-custom" id="productDesc" name="productDesc" rows="4" required></textarea>
-                                    <div class="invalid-feedback">Vui lòng nhập mô tả sản phẩm.</div>
+                                    <label for="productDesc" class="form-label text-dark fw-bold">Mô Tả Chi Tiết</label>
+                                    <textarea class="form-control form-control-custom" id="productDesc" name="productDesc" placeholder="Ví dụ: Gà rán giòn tan kèm sốt phô mai..." required></textarea>
+                                    <div class="invalid-feedback">Vui lòng nhập mô tả cho món ăn.</div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="productCategory" class="form-label text-dark fw-medium" style="font-size: 0.95rem;">Danh Mục</label>
-                                    <select class="form-select form-select-custom text-muted" id="productCategory" name="productCategory" required>
-                                        <option value="" selected disabled>--Chọn--</option>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="productCategory" class="form-label text-dark fw-bold">Danh Mục</label>
+                                        <select class="form-select form-select-custom" id="productCategory" name="productCategory" required>
+                                            <option value="" selected disabled>-- Chọn danh mục --</option>
+                                            <c:forEach items="${categoryList}" var="c">
+                                                <option value="${c.categoryId}">${c.categoryName}</option>
+                                            </c:forEach>
+                                        </select>
+                                        <div class="invalid-feedback">Vui lòng chọn danh mục.</div>
+                                    </div>
 
-                                        <c:forEach items="${categoryList}" var="c">
-                                            <option value="${c.categoryId}">${c.categoryName}</option>
-                                        </c:forEach>
-
-                                    </select>
-                                    <div class="invalid-feedback">Vui lòng chọn danh mục.</div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="productPrice" class="form-label text-dark fw-bold">Giá (đ)</label>
+                                        <input type="number" class="form-control form-control-custom" id="productPrice" name="productPrice" min="1000" placeholder="0" required>
+                                        <div class="invalid-feedback">Giá phải từ 1.000đ trở lên.</div>
+                                    </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="productPrice" class="form-label text-dark fw-medium" style="font-size: 0.95rem;">Giá</label>
-                                    <input type="number" class="form-control form-control-custom" id="productPrice" name="productPrice" min="1000" required>
-                                    <div class="invalid-feedback">Vui lòng nhập giá sản phẩm (tối thiểu 1000đ).</div>
-                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-dark fw-bold d-block">Tình Trạng</label>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="productStatus" id="statusActive" value="active" checked>
+                                            <label class="form-check-label" for="statusActive">Còn Bán</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="productStatus" id="statusInactive" value="inactive">
+                                            <label class="form-check-label" for="statusInactive">Hết Hàng</label>
+                                        </div>
 
-                                <div class="row mb-4">
+                                        <label for="productStock" class="form-label text-dark fw-bold mt-3 d-block">Số Lượng Kho</label>
+                                        <input type="number" class="form-control form-control-custom" id="productStock" name="productStock" value="10" min="0" required>
+                                    </div>
 
                                     <div class="col-md-6">
-                                        <div class="mb-3"> <label class="form-label text-dark d-block fw-medium" style="font-size: 0.95rem;">Tình Trạng</label>
-                                            <div class="form-check form-check-inline mb-1">
-                                                <input class="form-check-input form-check-input-custom" type="radio" name="productStatus" id="statusActive" value="active" checked>
-                                                <label class="form-check-label" for="statusActive">Còn Bán</label>
-                                            </div>
-                                            <div class="form-check form-check-inline d-block ms-0">
-                                                <input class="form-check-input form-check-input-custom" type="radio" name="productStatus" id="statusInactive" value="inactive">
-                                                <label class="form-check-label" for="statusInactive">Không Bán</label>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label for="productStock" class="form-label text-dark fw-medium" style="font-size: 0.95rem;">Số Lượng</label>
-                                            <input type="number" class="form-control form-control-custom" id="productStock" name="productStock" min="0" required>
-                                            <div class="invalid-feedback">Vui lòng nhập số lượng (từ 0 trở lên).</div>
+                                        <label for="productImage" class="form-label text-dark fw-bold">Hình ảnh</label>
+                                        <input class="form-control form-control-custom" type="file" id="productImage" name="productImage" accept="image/*" required>
+                                        <div class="mt-2 text-center" id="imagePreviewContainer">
+                                            <img id="imagePreview" src="https://via.placeholder.com/150x150?text=Ảnh+Món" alt="Preview" class="img-thumbnail" style="height: 120px; width: 120px; object-fit: cover;">
                                         </div>
                                     </div>
-
-                                    <div class="col-md-6 d-flex flex-column justify-content-end" style="min-height: 145px;">
-                                        <div id="inputWrapper" style="transition: all 0.3s ease;">
-                                            <label for="productImage" class="form-label text-dark fw-medium" style="font-size: 0.95rem;">Ảnh</label>
-                                            <input class="form-control form-control-custom" type="file" id="productImage" name="productImage" accept="image/*" style="font-size: 0.9rem;" required>
-                                            <div class="invalid-feedback">Vui lòng chọn hình ảnh.</div>
-                                        </div>
-
-                                        <div class="mt-3 text-center d-none" id="imagePreviewContainer">
-                                            <img id="imagePreview" src="" alt="Ảnh xem trước" class="img-fluid rounded shadow-sm border border-2 border-light" style="max-height: 180px; width: 100%; object-fit: cover;">
-                                        </div>
-                                    </div>
-
                                 </div>
 
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-custom py-2" style="font-size: 1.05rem; border-radius: 4px;">Xác Nhận</button>
-                                </div>
-
+                                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold text-white shadow">XÁC NHẬN THÊM MÓN</button>
                             </form>
                         </div>
                     </div>

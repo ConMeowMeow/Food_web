@@ -1,9 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ page import="java.util.List, java.util.ArrayList" %>
 <%@ page import="java.sql.Connection, java.sql.SQLException" %>
+<%@ page import="java.text.DecimalFormat" %>
 <%@ page import="Model.*, Controller.*" %>
 <%
     // Khởi tạo danh sách trống mặc định tránh lỗi NullPointerException khi render UI
@@ -17,20 +15,24 @@
     // Xử lý User Session
     User user = (User) session.getAttribute("userAccount");
     boolean isLogged = (user != null);
-    request.setAttribute("isLogged", isLogged);
+    
+    // Biến lưu thông tin user để dùng ở dưới (thay thế JSTL attribute)
+    String displayName = "";
+    String avatar = "";
+
+    // Bộ định dạng tiền tệ (thay cho <fmt:formatNumber>)
+    DecimalFormat df = new DecimalFormat("#,###");
 
     Connection conn = null;
     try {
         conn = Connect.getConnection();
-        
         // 1. Lấy toàn bộ sản phẩm
         ProductDAO pdao = new ProductDAO(conn);
         productList = pdao.getAllProducts();
-        request.setAttribute("products", productList);
 
         if (isLogged) {
-            request.setAttribute("displayName", user.getFullName());
-            request.setAttribute("avatar", user.getAvatarUrl());
+            displayName = user.getFullName();
+            avatar = user.getAvatarUrl();
 
             // 2. Dữ liệu Giỏ Hàng
             CartDAO cdao = new CartDAO();
@@ -52,16 +54,11 @@
     } catch (Exception e) {
         e.printStackTrace();
     } finally {
-        // Đảm bảo đóng kết nối thủ công ngay khi hoàn thành tải trang chủ
+        // Đảm bảo đóng kết nối thủ công ngay khi hoàn thành tải trang
         if (conn != null) {
             try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
-
-    request.setAttribute("cartList", cartList);
-    request.setAttribute("wishlist", wishlist);
-    request.setAttribute("favIds", favIds); // Gửi danh sách ID đã thích lên giao diện hiển thị
-    request.setAttribute("totalCartPrice", totalCartPrice);
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -85,7 +82,7 @@
     <body>
         <nav class="navbar navbar-expand-lg fixed-top">
             <div class="container align-items-center">
-                <a class="navbar-brand logo" href="./TrangChu.jsp">
+                <a class="navbar-brand logo" href="./TrangChu">
                     <img src="./img/logo.png" alt="Logo" class="nav-logo">
                 </a>
 
@@ -95,10 +92,10 @@
 
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav mx-auto fw-bold">
-                        <li class="nav-item"><a class="nav-link" href="./TrangChu.jsp">Trang chủ</a></li>
-                        <li class="nav-item"><a class="nav-link" href="./ThucDon.jsp">Thực đơn</a></li>
-                        <li class="nav-item"><a class="nav-link" href="./KhuyenMai.jsp">Khuyến mãi</a></li> 
-                        <li class="nav-item"><a class="nav-link" href="./LienHe.jsp">Liên hệ</a></li>
+                        <li class="nav-item"><a class="nav-link" href="./TrangChu">Trang chủ</a></li>
+                        <li class="nav-item"><a class="nav-link" href="./ThucDon">Thực đơn</a></li>
+                        <li class="nav-item"><a class="nav-link" href="./KhuyenMai">Khuyến mãi</a></li> 
+                        <li class="nav-item"><a class="nav-link" href="./LienHe">Liên hệ</a></li>
                     </ul>
 
                     <div class="d-flex align-items-center flex-wrap justify-content-center gap-2 mt-3 mt-lg-0 pb-3 pb-lg-0">
@@ -122,109 +119,104 @@
                                 <div class="wishlist-has-items d-none"> 
                                     <h6 class="fw-bold mb-3 border-bottom pb-2">Món ăn yêu thích (<span class="wishlist-count-text">0</span>)</h6>
                                     <div class="wishlist-items-list mb-3 scrollable-list"></div>
-                                    <a href="YeuThich.jsp" class="btn btn-custom w-100 text-center text-decoration-none">Xem chi tiết</a>
+                                    <a href="YeuThich" class="btn btn-custom w-100 text-center text-decoration-none">Xem chi tiết</a>
                                 </div>
                             </ul>
                         </div>
 
                         <div class="dropdown ms-2 position-relative" id="cartDropdownContainer">
-                            <a href="Cart.jsp" class="text-primary-custom text-dark fs-4 text-decoration-none icon-action d-flex align-items-center justify-content-center icon-wrap-circle" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                            <a href="Cart" class="text-primary-custom text-dark fs-4 text-decoration-none icon-action d-flex align-items-center justify-content-center icon-wrap-circle" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                                 <i class="fas fa-shopping-cart"></i> 
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge custom-badge-pos">
-                                    ${isLogged and not empty cartList ? cartList.size() : 0}
+                                    <%= (isLogged && cartList != null) ? cartList.size() : 0 %>
                                 </span>
                             </a>
 
                             <ul class="dropdown-menu dropdown-menu-end border-0 cart-dropdown-menu p-3 shadow" aria-labelledby="cartDropdown" style="min-width: 320px;">
                                 <li>
-                                <c:choose>
-                                    <c:when test="${not isLogged}">
-                                        <div class="cart-empty-guest text-center py-4">
-                                            <i class="fas fa-shopping-basket fs-1 text-muted mb-3 d-block"></i>
-                                            <p class="text-muted mb-3">Giỏ hàng trống. Đăng nhập để tiếp tục!</p>
-                                            <div class="d-flex gap-2 justify-content-center">
-                                                <a href="DangNhap.jsp" class="btn btn-outline-custom btn-sm w-50">Đăng nhập</a>
-                                                <a href="DangKy.jsp" class="btn btn-custom btn-sm w-50 text-decoration-none">Đăng ký</a>
-                                            </div>
+                                <% if (!isLogged) { %>
+                                    <div class="cart-empty-guest text-center py-4">
+                                        <i class="fas fa-shopping-basket fs-1 text-muted mb-3 d-block"></i>
+                                        <p class="text-muted mb-3">Giỏ hàng trống. Đăng nhập để tiếp tục!</p>
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a href="DangNhap" class="btn btn-outline-custom btn-sm w-50">Đăng nhập</a>
+                                            <a href="DangKy" class="btn btn-custom btn-sm w-50 text-decoration-none">Đăng ký</a>
                                         </div>
-                                    </c:when>
-                                    <c:when test="${empty cartList}">
-                                        <div class="cart-empty-user text-center py-4">
-                                            <i class="fas fa-shopping-basket fs-1 text-muted mb-3 d-block"></i>
-                                            <p class="text-muted mb-3">Giỏ hàng của bạn đang trống!</p>
-                                            <a href="ThucDon.jsp" class="btn btn-custom w-100 text-decoration-none">Đặt món ngay</a>
-                                        </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="cart-has-items"> 
-                                            <h6 class="fw-bold mb-3 border-bottom pb-2">Giỏ hàng của bạn</h6>
-                                            <div class="cart-items-list mb-3 scrollable-list" style="max-height: 250px; overflow-y: auto;">
-                                                <c:forEach var="item" items="${cartList}">
-                                                    <div class="d-flex align-items-center mb-3">
-                                                        <img src="${not empty item.imageUrl ? pageContext.request.contextPath.concat('/').concat(item.imageUrl) : './img/default.png'}" class="rounded object-fit-cover" style="width: 50px; height: 50px;">
-                                                        <div class="ms-3 flex-grow-1">
-                                                            <h6 class="mb-0 fs-6 fw-bold text-truncate" style="max-width: 150px;">${item.productName}</h6>
-                                                            <span class="text-primary-custom fw-bold"><fmt:formatNumber value="${item.price}" pattern="#,###"/>đ</span> <span class="text-muted small">x ${item.quantity}</span>
-                                                        </div>
-                                                        <a href="RemoveFromCart?productId=${item.productId}" class="btn btn-link text-danger p-0 ms-2"><i class="fas fa-trash-alt"></i></a>
+                                    </div>
+                                <% } else if (cartList == null || cartList.isEmpty()) { %>
+                                    <div class="cart-empty-user text-center py-4">
+                                        <i class="fas fa-shopping-basket fs-1 text-muted mb-3 d-block"></i>
+                                        <p class="text-muted mb-3">Giỏ hàng của bạn đang trống!</p>
+                                        <a href="ThucDon" class="btn btn-custom w-100 text-decoration-none">Đặt món ngay</a>
+                                    </div>
+                                <% } else { %>
+                                    <div class="cart-has-items"> 
+                                        <h6 class="fw-bold mb-3 border-bottom pb-2">Giỏ hàng của bạn</h6>
+                                        <div class="cart-items-list mb-3 scrollable-list" style="max-height: 250px; overflow-y: auto;">
+                                            <% for (CartItem item : cartList) { 
+                                                String imgSrc = (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) ? request.getContextPath() + "/" + item.getImageUrl() : "./img/default.png";
+                                            %>
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <img src="<%= imgSrc %>" class="rounded object-fit-cover" style="width: 50px; height: 50px;">
+                                                    <div class="ms-3 flex-grow-1">
+                                                        <h6 class="mb-0 fs-6 fw-bold text-truncate" style="max-width: 150px;"><%= item.getProductName() %></h6>
+                                                        <span class="text-primary-custom fw-bold"><%= df.format(item.getPrice()) %>đ</span> <span class="text-muted small">x <%= item.getQuantity() %></span>
                                                     </div>
-                                                </c:forEach>
-                                            </div>
-                                            <div class="d-flex justify-content-between border-top pt-2 mb-3 fw-bold">
-                                                <span>Tổng cộng:</span>
-                                                <span class="text-primary-custom"><fmt:formatNumber value="${totalCartPrice}" pattern="#,###"/>đ</span>
-                                            </div>
+                                                    <a href="RemoveFromCart?productId=<%= item.getProductId() %>" class="btn btn-link text-danger p-0 ms-2"><i class="fas fa-trash-alt"></i></a>
+                                                </div>
+                                            <% } %>
                                         </div>
-                                    </c:otherwise>
-                                </c:choose>
+                                        <div class="d-flex justify-content-between border-top pt-2 mb-3 fw-bold">
+                                            <span>Tổng cộng:</span>
+                                            <span class="text-primary-custom"><%= df.format(totalCartPrice) %>đ</span>
+                                        </div>
+                                    </div>
+                                <% } %>
                                 </li>
                             </ul>
                         </div>
 
                         <div class="dropdown ms-2 position-relative">
-                            <c:choose>
-                                <c:when test="${not isLogged}">
-                                    <a href="#" class="text-dark fs-4 text-decoration-none icon-action d-flex align-items-center justify-content-center icon-wrap-circle" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-user-circle"></i>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-center border-0 shadow profile-dropdown-menu" aria-labelledby="accountDropdown">
-                                        <li><a class="dropdown-item py-2 fw-semibold" href="./DangNhap.jsp"><i class="fas fa-sign-in-alt me-2 text-muted"></i> Đăng nhập</a></li>
-                                        <li><a class="dropdown-item py-2 fw-semibold" href="./DangKy.jsp"><i class="fas fa-user-plus me-2 text-muted"></i> Đăng ký</a></li>
-                                    </ul>
-                                </c:when>
-
-                                <c:otherwise>
-                                    <a href="#" class="text-dark text-decoration-none d-flex align-items-center justify-content-center border border-2 border-primary rounded-circle icon-wrap-profile" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <img src="${not empty avatar ? avatar : 'https://ui-avatars.com/api/?name='.concat(displayName).concat('&background=ea6a47&color=fff')}" 
-                                             alt="Avatar" class="rounded-circle w-100 h-100 object-fit-cover">
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-center border-0 shadow-lg profile-dropdown" aria-labelledby="accountDropdown">
-                                        <div class="profile-header mx-2 my-1 p-2 rounded d-flex align-items-center">
-                                            <img src="${not empty avatar ? avatar : 'https://ui-avatars.com/api/?name='.concat(displayName).concat('&background=ea6a47&color=fff')}" 
-                                                 alt="Avatar" class="rounded-circle icon-wrap-circle">
-                                            <div class="ms-3">
-                                                <h6 class="mb-0 fw-bold fs-6">${displayName}</h6>
-                                            </div>
+                            <% if (!isLogged) { %>
+                                <a href="#" class="text-dark fs-4 text-decoration-none icon-action d-flex align-items-center justify-content-center icon-wrap-circle" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-center border-0 shadow profile-dropdown-menu" aria-labelledby="accountDropdown">
+                                    <li><a class="dropdown-item py-2 fw-semibold" href="./DangNhap"><i class="fas fa-sign-in-alt me-2 text-muted"></i> Đăng nhập</a></li>
+                                    <li><a class="dropdown-item py-2 fw-semibold" href="./DangKy"><i class="fas fa-user-plus me-2 text-muted"></i> Đăng ký</a></li>
+                                </ul>
+                            <% } else { 
+                                String fallbackAvatar = "https://ui-avatars.com/api/?name=" + (displayName != null ? displayName.replace(" ", "+") : "U") + "&background=ea6a47&color=fff";
+                                String currentAvatar = (avatar != null && !avatar.trim().isEmpty()) ? avatar : fallbackAvatar;
+                            %>
+                                <a href="#" class="text-dark text-decoration-none d-flex align-items-center justify-content-center border border-2 border-primary rounded-circle icon-wrap-profile" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="<%= currentAvatar %>" alt="Avatar" class="rounded-circle w-100 h-100 object-fit-cover">
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-center border-0 shadow-lg profile-dropdown" aria-labelledby="accountDropdown">
+                                    <div class="profile-header mx-2 my-1 p-2 rounded d-flex align-items-center">
+                                        <img src="<%= currentAvatar %>" alt="Avatar" class="rounded-circle icon-wrap-circle">
+                                        <div class="ms-3">
+                                            <h6 class="mb-0 fw-bold fs-6"><%= displayName %></h6>
                                         </div>
-                                        <div class="px-2 mb-2">
-                                            <a href="./Profile.jsp" class="btn w-100 fw-bold text-primary-custom bg-light border-0">Xem trang cá nhân</a>
-                                        </div>
-                                        <li><hr class="dropdown-divider mb-2"></li>
-                                        <li class="px-2">
-                                            <a class="dropdown-item profile-item d-flex align-items-center" href="#">
-                                                <div class="icon-wrap"><i class="fas fa-clipboard-list"></i></div>
-                                                <span class="fw-semibold">Đơn hàng của tôi</span>
-                                            </a>
-                                        </li>
-                                        <li class="px-2">
-                                            <a class="dropdown-item profile-item d-flex align-items-center text-danger" href="DangXuat">
-                                                <div class="icon-wrap"><i class="fas fa-sign-out-alt"></i></div>
-                                                <span class="fw-semibold">Đăng xuất</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </c:otherwise>
-                            </c:choose>
+                                    </div>
+                                    <div class="px-2 mb-2">
+                                        <a href="./Profile" class="btn w-100 fw-bold text-primary-custom bg-light border-0">Xem trang cá nhân</a>
+                                    </div>
+                                    <li><hr class="dropdown-divider mb-2"></li>
+                                    <li class="px-2">
+                                        <a class="dropdown-item profile-item d-flex align-items-center" href="#">
+                                            <div class="icon-wrap"><i class="fas fa-clipboard-list"></i></div>
+                                            <span class="fw-semibold">Đơn hàng của tôi</span>
+                                        </a>
+                                    </li>
+                                    <li class="px-2">
+                                        <a class="dropdown-item profile-item d-flex align-items-center text-danger" href="DangXuat">
+                                            <div class="icon-wrap"><i class="fas fa-sign-out-alt"></i></div>
+                                            <span class="fw-semibold">Đăng xuất</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            <% } %>
                         </div>
 
                         <a class="text-dark fs-4 text-decoration-none icon-action d-flex align-items-center justify-content-center ms-2 icon-wrap-circle" data-bs-toggle="offcanvas" href="#offcanvasLeftMenu" role="button" aria-controls="offcanvasLeftMenu">
@@ -259,9 +251,7 @@
                         <li><a href="#" class="side-menu-link">Thức Uống & Tráng Miệng <i class="fas fa-chevron-right"></i></a></li>
                     </ul>
                 </div>
-
                 <hr class="border-secondary opacity-10 mx-3 my-3">
-
                 <div class="side-menu-group px-4 mb-2">
                     <h5 class="fw-bold text-dark mb-3 text-uppercase">Hỗ Trợ Khách Hàng</h5>
                     <ul class="list-unstyled">
@@ -269,9 +259,7 @@
                         <li><a href="#" class="side-menu-link">Liên Hệ Với Chúng Tôi <i class="fas fa-chevron-right"></i></a></li>
                     </ul>
                 </div>
-
                 <hr class="border-secondary opacity-10 mx-3 my-3">
-
                 <div class="side-menu-group px-4 mb-3">
                     <h5 class="fw-bold text-dark mb-3 text-uppercase">Chính Sách</h5>
                     <ul class="list-unstyled">
@@ -280,9 +268,7 @@
                         <li><a href="#" class="side-menu-link">Chính Sách Bảo Mật Thông Tin <i class="fas fa-chevron-right"></i></a></li>
                     </ul>
                 </div>
-
                 <hr class="border-secondary opacity-10 mx-3 my-3">
-
                 <div class="d-flex justify-content-center mt-auto" style="gap: 8px;">
                     <div class="menu-deco-line"></div>
                     <div class="menu-deco-line"></div>
@@ -300,11 +286,10 @@
                             <p class="section-subtitle text-warning mb-2 fs-5">Nhanh chóng & Ngon miệng</p>
                             <h1 class="display-3 fw-bold mb-4">Super Delicious <span class="text-primary-custom">Food!</span></h1>
                             <p class="lead mb-4 mx-auto hero-subtitle">Thưởng thức những món ăn nhanh nóng hổi, giòn rụm với hương vị bùng nổ. Giao hàng tận nơi trong vòng 30 phút.</p>
-                            <a href="./ThucDon.jsp" class="btn btn-custom btn-lg rounded-pill px-5">Đi tới Thực đơn</a>
+                            <a href="./ThucDon" class="btn btn-custom btn-lg rounded-pill px-5">Đi tới Thực đơn</a>
                         </div>
                     </div>
                 </div>
-
                 <div class="position-relative">
                     <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" alt="Banner Pizza" class="w-100 hero-banner-img">
                     <div class="hero-overlay d-flex align-items-center">
@@ -312,11 +297,10 @@
                             <p class="section-subtitle text-warning mb-2 fs-5">Hương vị Ý đích thực</p>
                             <h1 class="display-3 fw-bold mb-4">The Best <span class="text-primary-custom">Pizza!</span></h1>
                             <p class="lead mb-4 mx-auto hero-subtitle">Đế bánh giòn rụm, phô mai ngập tràn hòa quyện cùng các loại topping tươi ngon nhất. Đặt hàng ngay hôm nay!</p>
-                            <a href="./ThucDon.jsp" class="btn btn-custom btn-lg rounded-pill px-5">Khám phá ngay</a>
+                            <a href="./ThucDon" class="btn btn-custom btn-lg rounded-pill px-5">Khám phá ngay</a>
                         </div>
                     </div>
                 </div>
-
                 <div class="position-relative">
                     <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" alt="Banner Fresh" class="w-100 hero-banner-img">
                     <div class="hero-overlay d-flex align-items-center">
@@ -324,7 +308,7 @@
                             <p class="section-subtitle text-warning mb-2 fs-5">Tươi ngon mỗi ngày</p>
                             <h1 class="display-3 fw-bold mb-4">Healthy & <span class="text-primary-custom">Fresh!</span></h1>
                             <p class="lead mb-4 mx-auto hero-subtitle">Nguyên liệu được chọn lọc kỹ càng, đảm bảo an toàn vệ sinh thực phẩm cho bạn và gia đình.</p>
-                            <a href="./ThucDon.jsp" class="btn btn-custom btn-lg rounded-pill px-5">Xem thực đơn</a>
+                            <a href="./ThucDon" class="btn btn-custom btn-lg rounded-pill px-5">Xem thực đơn</a>
                         </div>
                     </div>
                 </div>
@@ -333,14 +317,11 @@
 
         <section class="cart-page position-relative cart-page-spacing">
             <div class="container mb-4">
-
                 <div class="cart-header-row bg-white shadow-sm rounded-1 d-flex flex-wrap align-items-center px-3 px-lg-4 py-3 mb-3 text-muted small fw-bold mx-0">
-
                     <div class="col-12 col-lg-4 d-flex align-items-center mb-2 mb-lg-0">
                         <input class="form-check-input custom-checkbox me-3 pointer-cursor" type="checkbox" id="selectAllTop">
                         <label for="selectAllTop" class="pointer-cursor">Món Ăn</label>
                     </div>
-
                     <div class="col-12 col-lg-8 d-none d-lg-block">
                         <div class="row w-100 mx-0">
                             <div class="col-3 text-center">Đơn Giá</div>
@@ -349,22 +330,23 @@
                             <div class="col-3 text-center">Thao Tác</div>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="cart-shop-group bg-white shadow-sm rounded-1 mb-3">
-                    <c:forEach var="item" items="${cartList}">
+                    <% if (cartList != null) { 
+                        for (CartItem item : cartList) { 
+                            String imgSrc = (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) ? request.getContextPath() + "/" + item.getImageUrl() : "./img/default.png";
+                    %>
                         <div class="cart-item-row row align-items-center py-4 border-bottom bg-white position-relative z-index-2 mx-0 px-3 px-lg-4">
-
                             <div class="col-12 col-lg-4 d-flex align-items-start mb-3 mb-lg-0">
                                 <div class="d-flex align-items-center h-100 me-2 mt-4 pt-2">
                                     <input class="form-check-input custom-checkbox pointer-cursor" type="checkbox" checked>
                                 </div>
-                                <a href="ChiTietMonAn.jsp?id=${item.productId}" class="d-block me-3 shrink-0">
-                                    <img src="${not empty item.imageUrl ? pageContext.request.contextPath.concat('/').concat(item.imageUrl) : './img/default.png'}" alt="${item.productName}" class="item-img border rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                                <a href="ChiTietMonAn?id=<%= item.getProductId() %>" class="d-block me-3 shrink-0">
+                                    <img src="<%= imgSrc %>" alt="<%= item.getProductName() %>" class="item-img border rounded" style="width: 80px; height: 80px; object-fit: cover;">
                                 </a>
                                 <div class="d-flex flex-column pt-1">
-                                    <a href="ChiTietMonAn.jsp?id=${item.productId}" class="fw-medium text-dark text-decoration-none mb-1 item-name">${item.productName}</a>
+                                    <a href="ChiTietMonAn?id=<%= item.getProductId() %>" class="fw-medium text-dark text-decoration-none mb-1 item-name"><%= item.getProductName() %></a>
                                 </div>
                             </div>
 
@@ -372,30 +354,30 @@
                                 <div class="row align-items-center w-100 mx-0">
                                     <div class="col-6 col-sm-3 col-lg-3 text-lg-center mb-3 mb-sm-0">
                                         <span class="d-block d-lg-none text-muted small fw-bold mb-1">Đơn Giá</span>
-                                        <span class="text-dark fw-medium"><fmt:formatNumber value="${item.price}" pattern="#,###"/>đ</span>
+                                        <span class="text-dark fw-medium"><%= df.format(item.getPrice()) %>đ</span>
                                     </div>
 
                                     <div class="col-6 col-sm-3 col-lg-3 d-flex justify-content-end justify-content-lg-center mb-3 mb-sm-0">
                                         <div class="qty-control-box d-flex align-items-center border rounded-1">
-                                            <a href="UpdateCart?action=decrease&productId=${item.productId}" class="btn-qty border-end text-dark text-decoration-none d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;"><i class="fas fa-minus fa-xs"></i></a>
-                                            <input type="text" class="qty-val text-center border-0" value="${item.quantity}" readonly style="width: 40px; outline: none; background: transparent;">
-                                            <a href="UpdateCart?action=increase&productId=${item.productId}" class="btn-qty border-start text-dark text-decoration-none d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;"><i class="fas fa-plus fa-xs"></i></a>
+                                            <a href="UpdateCart?action=decrease&productId=<%= item.getProductId() %>" class="btn-qty border-end text-dark text-decoration-none d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;"><i class="fas fa-minus fa-xs"></i></a>
+                                            <input type="text" class="qty-val text-center border-0" value="<%= item.getQuantity() %>" readonly style="width: 40px; outline: none; background: transparent;">
+                                            <a href="UpdateCart?action=increase&productId=<%= item.getProductId() %>" class="btn-qty border-start text-dark text-decoration-none d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;"><i class="fas fa-plus fa-xs"></i></a>
                                         </div>
                                     </div>
 
                                     <div class="col-6 col-sm-3 col-lg-3 text-lg-center text-primary-custom fw-semibold">
                                         <span class="d-block d-lg-none text-dark small fw-bold mb-1">Số Tiền</span>
-                                        <fmt:formatNumber value="${item.price * item.quantity}" pattern="#,###"/>đ
+                                        <%= df.format(item.getPrice() * item.getQuantity()) %>đ
                                     </div>
 
                                     <div class="col-6 col-sm-3 col-lg-3 text-end text-lg-center d-flex flex-column align-items-end align-items-lg-center justify-content-center gap-1">
-                                        <a href="RemoveFromCart?productId=${item.productId}" class="btn-action text-danger text-decoration-none fw-bold pointer-cursor mb-1">Xóa</a>
+                                        <a href="RemoveFromCart?productId=<%= item.getProductId() %>" class="btn-action text-danger text-decoration-none fw-bold pointer-cursor mb-1">Xóa</a>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
-                    </c:forEach>
+                    <%  } 
+                       } %>
                 </div>
 
                 <div class="px-4 py-3 bg-light d-flex align-items-center border-bottom">
@@ -409,7 +391,6 @@
                     <i class="fas fa-ticket-alt text-primary-custom fs-5 me-2"></i>
                     <span class="text-dark fw-bold">FastFood Voucher</span>
                 </div>
-
                 <a href="#" class="text-primary-custom text-decoration-none small fw-bold" id="cartVoucherDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
                     Chọn Hoặc Nhập Mã <i class="fas fa-chevron-down ms-1"></i>
                 </a>
@@ -421,24 +402,20 @@
                             <button type="button" class="btn px-4 fw-bold rounded-0 btn-voucher-save">Lưu</button>
                         </div>
                     </div>
-
                     <div class="p-3 voucher-list-scroll">
                         <div class="d-flex flex-column gap-3">
                             <div class="d-flex bg-white rounded border position-relative voucher-item-card">
                                 <div class="p-2 d-flex flex-column justify-content-center align-items-center text-white text-center position-relative voucher-left-brand">
                                     <div class="voucher-circle-top"></div>
                                     <div class="voucher-circle-bottom"></div>
-
                                     <div class="d-flex justify-content-center align-items-center mb-2 voucher-icon-box">
                                         <i class="fas fa-shopping-bag text-white fs-5"></i>
                                     </div>
-
                                     <div class="text-white text-center lh-1 mt-1">
                                         <div class="fw-bold mb-1 voucher-text-brand">FOODIE</div>
                                         <div class="fw-bold voucher-text-brand">MALL</div>
                                     </div>
                                 </div>
-
                                 <div class="p-3 flex-grow-1 d-flex justify-content-between align-items-center">
                                     <div class="pe-2">
                                         <h6 class="fw-bold mb-1 voucher-title">Giảm 15%</h6>
@@ -452,12 +429,10 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="d-flex bg-white rounded border position-relative voucher-item-card">
                                 <div class="p-2 d-flex flex-column justify-content-center align-items-center text-white text-center position-relative voucher-left-freeship">
                                     <div class="voucher-circle-top"></div>
                                     <div class="voucher-circle-bottom"></div>
-
                                     <div class="d-flex justify-content-center align-items-center mb-2 voucher-icon-box">
                                         <i class="fas fa-truck text-white fs-5"></i>
                                     </div>
@@ -479,237 +454,222 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-
                     <div class="p-3 border-top bg-white d-flex justify-content-end gap-2 shadow-sm">
                         <button class="btn btn-light border px-2 fw-bold text-muted pointer-cursor" data-bs-dismiss="dropdown">QUAY LẠI</button>
                         <button class="btn btn-custom px-2 fw-bold pointer-cursor" data-bs-dismiss="dropdown">OK</button>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="checkout-wrapper" class="w-100 position-relative mt-4">
-            <div id="checkout-bar" class="checkout-bar fixed-bottom checkout-bar-z">
-                <div class="container">
-                    <div class="bg-white shadow-sm border px-3 px-md-4 py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                        <div class="d-flex align-items-center gap-3 gap-md-4">
-                            <div class="d-flex align-items-center pointer-cursor">
-                                <input class="form-check-input custom-checkbox me-2 pointer-cursor" type="checkbox" id="selectAllBottom" checked>
-                                <label for="selectAllBottom" class="text-dark fw-bold pointer-cursor">Tất Cả <span class="d-none d-sm-inline">(2)</span></label>
-                            </div>
-                            <button class="btn-action text-dark d-none d-lg-block pointer-cursor">Xóa</button>
-                            <button class="btn-action text-primary-custom d-none d-lg-block pointer-cursor">Lưu vào Yêu thích</button>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-3 ms-auto">
-                            <div class="text-end d-none d-lg-block">
-                                <div class="d-flex align-items-center">
-                                    <span class="text-dark me-2 fs-6">Tổng thanh toán:</span>
-                                    <span class="text-primary-custom fw-bold fs-3"><fmt:formatNumber value="${totalCartPrice}" pattern="#,###"/>đ</span>
+            <div id="checkout-wrapper" class="w-100 position-relative mt-4">
+                <div id="checkout-bar" class="checkout-bar fixed-bottom checkout-bar-z">
+                    <div class="container">
+                        <div class="bg-white shadow-sm border px-3 px-md-4 py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div class="d-flex align-items-center gap-3 gap-md-4">
+                                <div class="d-flex align-items-center pointer-cursor">
+                                    <input class="form-check-input custom-checkbox me-2 pointer-cursor" type="checkbox" id="selectAllBottom" checked>
+                                    <label for="selectAllBottom" class="text-dark fw-bold pointer-cursor">Tất Cả <span class="d-none d-sm-inline">(<%= cartSize %>)</span></label>
                                 </div>
-                                <div class="small text-muted text-end">Tiết kiệm: <span class="text-primary-custom">25.000đ</span></div>
+                                <button class="btn-action text-dark d-none d-lg-block pointer-cursor">Xóa</button>
+                                <button class="btn-action text-primary-custom d-none d-lg-block pointer-cursor">Lưu vào Yêu thích</button>
                             </div>
-                            <div class="text-end d-block d-lg-none">
-                                <div class="text-dark small fw-bold">Tổng:</div>
-                                <span class="text-primary-custom fw-bold fs-5">323.000đ</span>
+                            <div class="d-flex align-items-center gap-3 ms-auto">
+                                <div class="text-end d-none d-lg-block">
+                                    <div class="d-flex align-items-center">
+                                        <span class="text-dark me-2 fs-6">Tổng thanh toán:</span>
+                                        <span class="text-primary-custom fw-bold fs-3"><%= df.format(totalCartPrice) %>đ</span>
+                                    </div>
+                                    <div class="small text-muted text-end">Tiết kiệm: <span class="text-primary-custom">25.000đ</span></div>
+                                </div>
+                                <div class="text-end d-block d-lg-none">
+                                    <div class="text-dark small fw-bold">Tổng:</div>
+                                    <span class="text-primary-custom fw-bold fs-5"><%= df.format(totalCartPrice) %>đ</span>
+                                </div>
+                                <a href="ThanhToan" class="btn btn-checkout text-decoration-none pointer-cursor">Thanh Toán</a>
                             </div>
-
-                            <a href="ThanhToan.jsp" class="btn btn-checkout text-decoration-none pointer-cursor">Thanh Toán</a>
                         </div>
-
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="suggested-food py-5 mt-4">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-end mb-4">
+                    <div>
+                        <h3 class="fw-bold mb-0 ff-heading">Có Thể Bạn Sẽ Thích</h3>
+                    </div>
+                    <a href="ThucDon" class="text-primary-custom fw-bold text-decoration-none d-flex align-items-center suggested-see-more">
+                        Xem thêm <i class="fas fa-chevron-right ms-2 fs-6"></i>
+                    </a>
+                </div>
+                <div class="row g-4">
+                    <div class="col-6 col-md-6 col-lg-3">
+                        <div class="food-card position-relative h-100 border border-danger border-opacity-25 bg-white"> 
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-3 p-2 shadow-sm fs-6">-15%</span>
+                            <button class="btn btn-wishlist position-absolute top-0 end-0 m-3 p-2 border-0 bg-transparent shadow-none z-index-5 pointer-cursor">
+                                <i class="far fa-heart fs-4 text-secondary"></i>
+                            </button>
+                            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Beef Burger" class="food-img rounded-circle shadow-sm">
+                            <h4 class="fw-bold fs-5 mb-1">
+                                <a href="ChiTietMonAn" class="text-dark text-decoration-none stretched-link food-title">Beef Burger Classic</a>
+                            </h4>
+                            <p class="text-muted small mb-3">Thịt bò, Phô mai, Rau thơm</p>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <span class="price text-start">
+                                    <del class="text-muted fs-6 me-2">150.000đ</del><br>
+                                    <span class="text-danger fw-bold">125.000đ</span>
+                                </span>
+                                <button class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 fs-6 pointer-cursor">
+                                    Thêm <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-3">
+                        <div class="food-card position-relative h-100 border border-danger border-opacity-25 bg-white"> 
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-3 p-2 shadow-sm fs-6">HOT</span>
+                            <button class="btn btn-wishlist position-absolute top-0 end-0 m-3 p-2 border-0 bg-transparent shadow-none z-index-5 pointer-cursor">
+                                <i class="far fa-heart fs-4 text-secondary"></i>
+                            </button>
+                            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Pizza" class="food-img rounded-circle shadow-sm">
+                            <h4 class="fw-bold fs-5 mb-1">
+                                <a href="ChiTietMonAn" class="text-dark text-decoration-none stretched-link food-title">Tasty Buzzed Pizza</a>
+                            </h4>
+                            <p class="text-muted small mb-3">Đế mỏng, ngập ngụa phô mai</p>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <span class="price text-start">
+                                    <del class="text-muted fs-6 me-2 opacity-0">&nbsp;</del><br>
+                                    <span class="text-danger fw-bold">99.000đ</span>
+                                </span>
+                                <button class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 fs-6 pointer-cursor">
+                                    Thêm <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-3">
+                        <div class="food-card position-relative h-100 border border-danger border-opacity-25 bg-white"> 
+                            <button class="btn btn-wishlist position-absolute top-0 end-0 m-3 p-2 border-0 bg-transparent shadow-none z-index-5 pointer-cursor">
+                                <i class="far fa-heart fs-4 text-secondary"></i>
+                            </button>
+                            <img src="https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&q=80" alt="Burger Gà" class="food-img rounded-circle shadow-sm">
+                            <h4 class="fw-bold fs-5 mb-1">
+                                <a href="ChiTietMonAn" class="text-dark text-decoration-none stretched-link food-title">Burger Gà Giòn</a>
+                            </h4>
+                            <p class="text-muted small mb-3">Gà rán xù, sốt Mayo béo ngậy</p>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <span class="price text-start">
+                                    <del class="text-muted fs-6 me-2 opacity-0">&nbsp;</del><br>
+                                    <span class="text-danger fw-bold">65.000đ</span>
+                                </span>
+                                <button class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 fs-6 pointer-cursor">
+                                    Thêm <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-6 col-lg-3">
+                        <div class="food-card position-relative h-100 border border-danger border-opacity-25 bg-white"> 
+                            <span class="badge bg-success position-absolute top-0 start-0 m-3 p-2 shadow-sm fs-6">NEW</span>
+                            <button class="btn btn-wishlist position-absolute top-0 end-0 m-3 p-2 border-0 bg-transparent shadow-none z-index-5 pointer-cursor">
+                                <i class="far fa-heart fs-4 text-secondary"></i>
+                            </button>
+                            <img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=300&q=80" alt="Gà rán" class="food-img rounded-circle shadow-sm">
+                            <h4 class="fw-bold fs-5 mb-1">
+                                <a href="ChiTietMonAn" class="text-dark text-decoration-none stretched-link food-title">Gà Rán (1 Miếng)</a>
+                            </h4>
+                            <p class="text-muted small mb-3">Lớp vỏ giòn tan, thịt mọng nước</p>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <span class="price text-start">
+                                    <del class="text-muted fs-6 me-2 opacity-0">&nbsp;</del><br>
+                                    <span class="text-danger fw-bold">36.000đ</span>
+                                </span>
+                                <button class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 fs-6 pointer-cursor">
+                                    Thêm <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container text-center">
+                <h4 class="footer-title mb-4">Các thành viên trong nhóm:</h4>
+                <div class="d-flex flex-column align-items-center gap-3">
+                    <div class="member-item">
+                        <div class="member-name">1. Ngô Phương Anh - 09/05/2005</div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-name">2. Phùng Ngọc Bảo - 13/12/2005</div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-name">3. Vũ Ngọc Hương Giang - 25/12/2005</div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <a href="#" class="back-top-btn active" aria-label="Back to top" data-back-top-btn style="z-index: 1999;">
+            <i class="fas fa-chevron-up"></i>
+        </a>
+
+        <div class="toast-container position-fixed top-0 end-0 p-3 mt-5 pt-4 toast-custom-pos">
+            <div id="wishlistToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
             </div>
         </div>
-    </section>
 
-    <section class="suggested-food py-5 mt-4">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-end mb-4">
-                <div>
-                    <h3 class="fw-bold mb-0 ff-heading">Có Thể Bạn Sẽ Thích</h3>
-                </div>
-                <a href="ThucDon.jsp" class="text-primary-custom fw-bold text-decoration-none d-flex align-items-center suggested-see-more">
-                    Xem thêm <i class="fas fa-chevron-right ms-2 fs-6"></i>
-                </a>
-            </div>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="./js/index.js"></script>
 
-            <div class="row g-4">
-                <div class="col-6 col-md-6 col-lg-3">
-                    <div class="food-card position-relative h-100 border border-danger border-opacity-25 bg-white"> 
-                        <span class="badge bg-danger position-absolute top-0 start-0 m-3 p-2 shadow-sm fs-6">-15%</span>
-                        <button class="btn btn-wishlist position-absolute top-0 end-0 m-3 p-2 border-0 bg-transparent shadow-none z-index-5 pointer-cursor">
-                            <i class="far fa-heart fs-4 text-secondary"></i>
-                        </button>
-                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Beef Burger" class="food-img rounded-circle shadow-sm">
-                        <h4 class="fw-bold fs-5 mb-1">
-                            <a href="ChiTietMonAn.jsp" class="text-dark text-decoration-none stretched-link food-title">Beef Burger Classic</a>
-                        </h4>
-                        <p class="text-muted small mb-3">Thịt bò, Phô mai, Rau thơm</p>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <span class="price text-start">
-                                <del class="text-muted fs-6 me-2">150.000đ</del><br>
-                                <span class="text-danger fw-bold">125.000đ</span>
-                            </span>
-                            <button class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 fs-6 pointer-cursor">
-                                Thêm <i class="fas fa-cart-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const wrapper = document.getElementById('checkout-wrapper');
+                const bar = document.getElementById('checkout-bar');
 
-                <div class="col-6 col-md-6 col-lg-3">
-                    <div class="food-card position-relative h-100 border border-danger border-opacity-25 bg-white"> 
-                        <span class="badge bg-danger position-absolute top-0 start-0 m-3 p-2 shadow-sm fs-6">HOT</span>
-                        <button class="btn btn-wishlist position-absolute top-0 end-0 m-3 p-2 border-0 bg-transparent shadow-none z-index-5 pointer-cursor">
-                            <i class="far fa-heart fs-4 text-secondary"></i>
-                        </button>
-                        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="Pizza" class="food-img rounded-circle shadow-sm">
-                        <h4 class="fw-bold fs-5 mb-1">
-                            <a href="ChiTietMonAn.jsp" class="text-dark text-decoration-none stretched-link food-title">Tasty Buzzed Pizza</a>
-                        </h4>
-                        <p class="text-muted small mb-3">Đế mỏng, ngập ngụa phô mai</p>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <span class="price text-start">
-                                <del class="text-muted fs-6 me-2 opacity-0">&nbsp;</del><br>
-                                <span class="text-danger fw-bold">99.000đ</span>
-                            </span>
-                            <button class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 fs-6 pointer-cursor">
-                                Thêm <i class="fas fa-cart-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                if (wrapper && bar) {
+                    function updateBarPosition() {
+                        const barHeight = bar.offsetHeight;
+                        wrapper.style.height = barHeight + 'px';
 
-                <div class="col-6 col-md-6 col-lg-3">
-                    <div class="food-card position-relative h-100 border border-danger border-opacity-25 bg-white"> 
-                        <button class="btn btn-wishlist position-absolute top-0 end-0 m-3 p-2 border-0 bg-transparent shadow-none z-index-5 pointer-cursor">
-                            <i class="far fa-heart fs-4 text-secondary"></i>
-                        </button>
-                        <img src="https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&q=80" alt="Burger Gà" class="food-img rounded-circle shadow-sm">
-                        <h4 class="fw-bold fs-5 mb-1">
-                            <a href="ChiTietMonAn.jsp" class="text-dark text-decoration-none stretched-link food-title">Burger Gà Giòn</a>
-                        </h4>
-                        <p class="text-muted small mb-3">Gà rán xù, sốt Mayo béo ngậy</p>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <span class="price text-start">
-                                <del class="text-muted fs-6 me-2 opacity-0">&nbsp;</del><br>
-                                <span class="text-danger fw-bold">65.000đ</span>
-                            </span>
-                            <button class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 fs-6 pointer-cursor">
-                                Thêm <i class="fas fa-cart-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-6 col-md-6 col-lg-3">
-                    <div class="food-card position-relative h-100 border border-danger border-opacity-25 bg-white"> 
-                        <span class="badge bg-success position-absolute top-0 start-0 m-3 p-2 shadow-sm fs-6">NEW</span>
-                        <button class="btn btn-wishlist position-absolute top-0 end-0 m-3 p-2 border-0 bg-transparent shadow-none z-index-5 pointer-cursor">
-                            <i class="far fa-heart fs-4 text-secondary"></i>
-                        </button>
-                        <img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=300&q=80" alt="Gà rán" class="food-img rounded-circle shadow-sm">
-                        <h4 class="fw-bold fs-5 mb-1">
-                            <a href="ChiTietMonAn.jsp" class="text-dark text-decoration-none stretched-link food-title">Gà Rán (1 Miếng)</a>
-                        </h4>
-                        <p class="text-muted small mb-3">Lớp vỏ giòn tan, thịt mọng nước</p>
-                        <div class="d-flex justify-content-between align-items-end">
-                            <span class="price text-start">
-                                <del class="text-muted fs-6 me-2 opacity-0">&nbsp;</del><br>
-                                <span class="text-danger fw-bold">36.000đ</span>
-                            </span>
-                            <button class="btn btn-add-cart action-btn btn-outline-custom rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2 fs-6 pointer-cursor">
-                                Thêm <i class="fas fa-cart-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="footer">
-        <div class="container text-center">
-            <h4 class="footer-title mb-4">Các thành viên trong nhóm:</h4>
-
-            <div class="d-flex flex-column align-items-center gap-3">
-                <div class="member-item">
-                    <div class="member-name">1. Ngô Phương Anh - 09/05/2005</div>
-                </div>
-
-                <div class="member-item">
-                    <div class="member-name">2. Phùng Ngọc Bảo - 13/12/2005</div>
-                </div>
-
-                <div class="member-item">
-                    <div class="member-name">3. Vũ Ngọc Hương Giang - 25/12/2005</div>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <a href="#" class="back-top-btn active" aria-label="Back to top" data-back-top-btn style="z-index: 1999;">
-        <i class="fas fa-chevron-up"></i>
-    </a>
-
-    <div class="toast-container position-fixed top-0 end-0 p-3 mt-5 pt-4 toast-custom-pos">
-        <div id="wishlistToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="./js/index.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const wrapper = document.getElementById('checkout-wrapper');
-            const bar = document.getElementById('checkout-bar');
-
-            if (wrapper && bar) {
-                function updateBarPosition() {
-                    const barHeight = bar.offsetHeight;
-                    wrapper.style.height = barHeight + 'px';
-
-                    const rect = wrapper.getBoundingClientRect();
-                    if (rect.top <= window.innerHeight - barHeight) {
-                        bar.classList.remove('fixed-bottom');
-                        bar.style.position = 'absolute';
-                        bar.style.bottom = '0';
-                    } else {
-                        bar.classList.add('fixed-bottom');
-                        bar.style.position = 'fixed';
-                        bar.style.bottom = '0';
+                        const rect = wrapper.getBoundingClientRect();
+                        if (rect.top <= window.innerHeight - barHeight) {
+                            bar.classList.remove('fixed-bottom');
+                            bar.style.position = 'absolute';
+                            bar.style.bottom = '0';
+                        } else {
+                            bar.classList.add('fixed-bottom');
+                            bar.style.position = 'fixed';
+                            bar.style.bottom = '0';
+                        }
                     }
+
+                    window.addEventListener('scroll', updateBarPosition);
+                    window.addEventListener('resize', updateBarPosition);
+                    setTimeout(updateBarPosition, 100);
                 }
 
-                window.addEventListener('scroll', updateBarPosition);
-                window.addEventListener('resize', updateBarPosition);
-
-                setTimeout(updateBarPosition, 100);
-            }
-
-            document.querySelectorAll('.voucher-item-card').forEach(card => {
-                card.addEventListener('click', function (event) {
-                    const cb = this.querySelector('input[type=checkbox]');
-                    if (event.target !== cb) {
-                        cb.checked = !cb.checked;
-                        cb.dispatchEvent(new Event('change'));
-                    }
+                document.querySelectorAll('.voucher-item-card').forEach(card => {
+                    card.addEventListener('click', function (event) {
+                        const cb = this.querySelector('input[type=checkbox]');
+                        if (event.target !== cb) {
+                            cb.checked = !cb.checked;
+                            cb.dispatchEvent(new Event('change'));
+                        }
+                    });
                 });
             });
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>

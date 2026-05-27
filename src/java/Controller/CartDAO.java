@@ -146,4 +146,15 @@ public class CartDAO {
             e.printStackTrace();
         }
     }
+
+    // Hàm xóa toàn bộ sản phẩm trong giỏ sau khi đặt hàng thành công
+    public void clearCart(int userId) {
+        String sql = "DELETE FROM cart_items WHERE cart_id = (SELECT cart_id FROM carts WHERE user_id = ? AND status = 'active')";
+        try ( Connection con = Connect.getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
